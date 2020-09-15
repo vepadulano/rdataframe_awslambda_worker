@@ -1,1 +1,1 @@
-# eos-to-s3-worker
+# ROOT base lambda layer creator
