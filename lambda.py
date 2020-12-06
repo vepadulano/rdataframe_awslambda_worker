@@ -34,8 +34,9 @@ outHistFile.Close()
     result = os.system('''
         export PATH=/mnt/cern_root/chroot/usr/local/sbin:/mnt/cern_root/chroot/usr/local/bin:/mnt/cern_root/chroot/usr/sbin:/mnt/cern_root/chroot/usr/bin:/mnt/cern_root/chroot/sbin:/mnt/cern_root/chroot/bin:$PATH && \
         export LD_LIBRARY_PATH=/mnt/cern_root/chroot/usr/lib64:/mnt/cern_root/chroot/usr/lib:/usr/lib64:/usr/lib:$LD_LIBRARY_PATH && \
-        export CPATH=/mnt/cern_root/chroot/usr/include:$CPATH && \            
+        export CPATH=/mnt/cern_root/chroot/usr/include:$CPATH && \      
         export roothome=/mnt/cern_root/root_install && \
+        export PYTHONPATH=/mnt/cern_root/root_install/PyRDF:$PYTHONPATH && \     
         . ${roothome}/bin/thisroot.sh && \
         cd /tmp && \
         python3.7 /tmp/script.py /tmp/in.root myTree
