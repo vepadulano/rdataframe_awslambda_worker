@@ -3,40 +3,25 @@ import os
 
 import boto3
 
+bucket = os.environ.get('bucket')
+
 
 def lambda_handler(event, context):
-    print("started")
     s3 = boto3.client('s3')
-    print("downloading obj")
-    try:
-        os.mkdir('/mnt/cern_root/tmp')
-    except OSError as error:
-        print(error)
-
-        # s3.download_file(event['in_bucket_name'], event['file_path'], '/mnt/cern_root/tmp/in.root')
+    start, end, file = event['range']
+    mapper = event['mapper']
     print("streamed obj")
 
-    intro = """
-import sys
-print(sys.argv)
-import ROOT
-import PyRDF
-
-fileName = sys.argv[1]
-treeName = sys.argv[2]
+    glue = f"""
+import pickle
+mapper=pickle.loads({mapper})
+range={event['range']}
+hist=mapper(range)
+pickle.dump(hist, open('/tmp/out.pickle','w'))
 """
 
-    outro = """
-outHistFile = ROOT.TFile.Open("out.root","RECREATE")
-outHistFile.cd()
-hist.write()
-outHistFile.Close()
-"""
-
-    script_file = open('/mnt/cern_root/root_install/PyRDF/script.py', "w")
-    script_file.write(intro)
-    script_file.write(event['script'])
-    script_file.write(outro)
+    script_file = open('/tmp/to_execute.py', "w")
+    script_file.write(glue)
     script_file.close()
 
     result = os.system('''
@@ -47,7 +32,7 @@ outHistFile.Close()
         export roothome=/mnt/cern_root/root_install && \
         cd /mnt/cern_root/root_install/PyRDF && \
         . ${roothome}/bin/thisroot.sh && \
-        /mnt/cern_root/chroot/usr/bin/python3.7 /mnt/cern_root/root_install/PyRDF/script.py /mnt/cern_root/tmp/in.root myTree
+        /mnt/cern_root/chroot/usr/bin/python3.7 /tmp/to_execute.py
     ''')
     if not result:
         return {
@@ -56,7 +41,7 @@ outHistFile.Close()
             'result': json.dumps(result)
         }
 
-    s3.upload_file(f'/tmp/out.root', event['out_bucket_name'], event['file_path'])
+    s3.upload_file(f'/tmp/out.pickle', bucket, f'{file}_{start}_{end}.pickle')
 
     return {
         'statusCode': 200,
