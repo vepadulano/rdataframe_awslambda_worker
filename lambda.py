@@ -1,7 +1,6 @@
 import base64
 import json
 import os
-import pickle
 
 import boto3
 
@@ -11,14 +10,18 @@ bucket = os.environ.get('bucket')
 def lambda_handler(event, context):
     print('event', event)
     s3 = boto3.client('s3')
-    start, end, file = pickle.loads(base64.decodebytes(event['range'].encode("ascii")))
-    mapper = pickle.loads(base64.decodebytes(event['mapper'].encode("ascii")))
+
+    start = str(event['start'])
+    end = str(event['end'])
+
+    range = base64.decodebytes(event['range'][2:-1])
+    mapper = base64.decodebytes(event['mapper'].encode("ascii"))
     print("streamed obj")
 
     glue = f"""
 import pickle
 mapper=pickle.loads({mapper})
-range={event['range']}
+range=pickle.loads({range})
 hist=mapper(range)
 pickle.dump(hist, open('/tmp/out.pickle','w'))
 """
@@ -44,7 +47,7 @@ pickle.dump(hist, open('/tmp/out.pickle','w'))
             'result': json.dumps(result)
         }
 
-    s3.upload_file(f'/tmp/out.pickle', bucket, f'{file}_{start}_{end}.pickle')
+    s3.upload_file(f'/tmp/out.pickle', bucket, f'partial_{start}_{end}.pickle')
 
     return {
         'statusCode': 200,
