@@ -23,7 +23,7 @@ import pickle
 mapper=pickle.loads({mapper})
 range=pickle.loads({range})
 hist=mapper(range)
-pickle.dump(hist, open('/tmp/out.pickle','w'))
+pickle.dump(hist, open('/tmp/out.pickle','wb'))
 """
 
     script_file = open('/tmp/to_execute.py', "w")
