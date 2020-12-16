@@ -11,8 +11,8 @@ bucket = os.environ.get('bucket')
 def lambda_handler(event, context):
     print('event', event)
     s3 = boto3.client('s3')
-    start, end, file = pickle.loads(base64.b64decode(bytes(event['range'])))
-    mapper = pickle.loads(base64.b64decode(bytes(event['mapper'])))
+    start, end, file = pickle.loads(base64.decodebytes(event['range'].encode("ascii")))
+    mapper = pickle.loads(base64.decodebytes(event['mapper'].encode("ascii")))
     print("streamed obj")
 
     glue = f"""
