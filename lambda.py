@@ -40,6 +40,8 @@ pickle.dump(hist, open('/tmp/out.pickle','w'))
         . ${roothome}/bin/thisroot.sh && \
         /mnt/cern_root/chroot/usr/bin/python3.7 /tmp/to_execute.py
     ''')
+    s3.upload_file(f'/tmp/out.pickle', bucket, f'partial_{start}_{end}.pickle')
+
     if not result:
         return {
             'statusCode': 500,
@@ -47,7 +49,6 @@ pickle.dump(hist, open('/tmp/out.pickle','w'))
             'result': json.dumps(result)
         }
 
-    s3.upload_file(f'/tmp/out.pickle', bucket, f'partial_{start}_{end}.pickle')
 
     return {
         'statusCode': 200,
