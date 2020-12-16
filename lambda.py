@@ -15,7 +15,7 @@ def lambda_handler(event, context):
     end = str(event['end'])
 
     range = base64.b64decode(event['range'][2:-1])
-    mapper = base64.b64decode(event['mapper'][2:-1])
+    mapper = base64.b64decode(event['script'][2:-1])
     print("streamed obj")
 
     glue = f"""
