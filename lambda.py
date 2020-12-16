@@ -38,7 +38,6 @@ pickle.dump(hist, open('/tmp/out.pickle','w'))
         export roothome=/mnt/cern_root/root_install && \
         cd /mnt/cern_root/root_install/PyRDF && \
         . ${roothome}/bin/thisroot.sh && \
-        /mnt/cern_root/chroot/usr/bin/python3.7 -m pip install cloudpickle numpy --target=/mnt/cern_root/root_install && \
         /mnt/cern_root/chroot/usr/bin/python3.7 /tmp/to_execute.py
     ''')
     if not result:
