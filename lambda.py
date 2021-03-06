@@ -2,7 +2,7 @@ import base64
 import json
 import os
 import pickle
-# from ast import literal_eval
+from ast import literal_eval
 
 import boto3
 
@@ -14,7 +14,7 @@ def lambda_handler(event, context):
 
     start = str(event['start'])
     end = str(event['end'])
-    filelist= event['filelist']
+    filelist= literal_eval(event['filelist'])
     friend_info= None
     if event.get('friend_info'):
         friend_info = pickle.loads(
