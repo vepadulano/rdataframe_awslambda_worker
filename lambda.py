@@ -1,7 +1,7 @@
 import base64
 import json
 import os
-import pickle
+import cloudpickle as pickle
 from ast import literal_eval
 
 import boto3
