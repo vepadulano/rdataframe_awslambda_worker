@@ -28,7 +28,7 @@ def lambda_handler(event, context):
     range.end=end
     range.filelist=filelist
     if friend_info:
-        range.friend_info=pickle.loads(base64.b64decode(friend_info)[2:-1])
+        range.friend_info=pickle.loads(base64.b64decode(friend_info[2:-1]))
 
     hist=mapper(range)
     pickle.dump(hist, open('/tmp/out.pickle','wb'))
