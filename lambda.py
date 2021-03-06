@@ -18,8 +18,8 @@ def lambda_handler(event, context):
     mapper = base64.b64decode(event['script'][2:-1])
     print("streamed obj")
 
-    mapper=pickle.loads({mapper})
-    range=pickle.loads({range})
+    mapper=pickle.loads(mapper)
+    range=pickle.loads(range)
     hist=mapper(range)
     pickle.dump(hist, open('/tmp/out.pickle','wb'))
 
