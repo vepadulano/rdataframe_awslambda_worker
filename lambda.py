@@ -33,9 +33,14 @@ def lambda_handler(event, context):
     range.end=end
     range.filelist=filelist
     print("before friend")
-    if friend_info:
-        range.friend_info=friend_info
+    if friend_info is not None:
+        print(friend_info)
+        print(friend_info.friend_names)
+        print(friend_info.friend_file_names)
+
+    range.friend_info=friend_info
     print("after friend")
+
     hist=mapper(range)
     print("after map")
     pickle.dump(hist, open('/tmp/out.pickle','wb'))
