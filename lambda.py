@@ -12,8 +12,8 @@ def lambda_handler(event, context):
     print('event', event)
     s3 = boto3.client('s3')
 
-    start = str(event['start'])
-    end = str(event['end'])
+    start = int(event['start'])
+    end = int(event['end'])
     filelist= literal_eval(event['filelist'])
     friend_info= None
     if event.get('friend_info'):
@@ -55,7 +55,7 @@ def lambda_handler(event, context):
     #     . ${roothome}/bin/thisroot.sh && \
     #     /mnt/cern_root/chroot/usr/bin/python3.7 /tmp/to_execute.py
     # ''')
-    s3.upload_file(f'/tmp/out.pickle', bucket, f'partial_{start}_{end}.pickle')
+    s3.upload_file(f'/tmp/out.pickle', bucket, f'partial_{str(start)}_{str(end)}.pickle')
 
     # if not result:
     #     return {
