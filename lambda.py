@@ -6,6 +6,7 @@ import cloudpickle as pickle
 from ast import literal_eval
 
 import boto3
+import ROOT
 
 bucket = os.environ.get('bucket')
 
@@ -41,13 +42,25 @@ def lambda_handler(event, context):
     range.friend_info=friend_info
     print("after friend")
 
-    hist=mapper(range)
+    try:
+        hist=mapper(range)
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'errorType': json.dumps(type(e).__name__),
+            'errorMessage': json.dumps(str(e)),
+        }
+
     print("after map")
-    pickle.dump(hist, open('/tmp/out.pickle','wb'))
 
-    filename=f'partial_{str(start)}_{str(end)}_{str(int(time.time()*1000.0))}.pickle'
+    f = ROOT.TFile('/tmp/out.root', 'RECREATE')
+    for h in hist:
+        h.Write()
+    f.Close()
 
-    s3.upload_file(f'/tmp/out.pickle', bucket, filename)
+    filename=f'partial_{str(start)}_{str(end)}_{str(int(time.time()*1000.0))}.root'
+
+    s3.upload_file(f'/tmp/out.root', bucket, filename)
 
     return {
         'statusCode': 200,
