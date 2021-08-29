@@ -6,6 +6,7 @@ import cloudpickle as pickle
 from ast import literal_eval
 
 import boto3
+import ROOT
 
 bucket = os.environ.get('bucket')
 
@@ -29,21 +30,35 @@ def lambda_handler(event, context):
     mapper=pickle.loads(mapper)
     range=pickle.loads(range)
 
-    range.start=start
-    range.end=end
-    range.filelist=filelist
-    print("before friend")
-    if friend_info is not None:
-        print(friend_info)
-        print(friend_info.friend_names)
-        print(friend_info.friend_file_names)
+    # range.start=start
+    # range.end=end
+    # range.filelist=filelist
+    # print("before friend")
+    # if friend_info is not None:
+    #     print(friend_info)
+    #     print(friend_info.friend_names)
+    #     print(friend_info.friend_file_names)
 
-    range.friend_info=friend_info
-    print("after friend")
+    # range.friend_info=friend_info
+    # print("after friend")
 
-    hist=mapper(range)
+    try:
+        hist=mapper(range)
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'errorType': json.dumps(type(e).__name__),
+            'errorMessage': json.dumps(str(e)),
+        }
+
     print("after map")
-    pickle.dump(hist, open('/tmp/out.pickle','wb'))
+
+    # f = ROOT.TFile('/tmp/out.root', 'RECREATE')
+    # for h in hist:
+    #     h.GetValue().Write()
+    # f.Close()
+    with open('/tmp/out.pickle', 'wb') as handle:
+        pickle.dump(hist, handle)
 
     filename=f'partial_{str(start)}_{str(end)}_{str(int(time.time()*1000.0))}.pickle'
 
