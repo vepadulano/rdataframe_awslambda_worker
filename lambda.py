@@ -26,9 +26,14 @@ def lambda_handler(event, context):
 
     range = base64.b64decode(event['range'][2:-1])
     mapper = base64.b64decode(event['script'][2:-1])
+    cert_file =  base64.b64decode(event['cert'][2:-1])
 
     mapper=pickle.loads(mapper)
     range=pickle.loads(range)
+
+    text_file = open("/tmp/certs", "wb")
+    n = text_file.write(cert_file)
+    text_file.close()
 
     # range.start=start
     # range.end=end
@@ -68,3 +73,4 @@ def lambda_handler(event, context):
         'statusCode': 200,
         'body': json.dumps(f'Done analyzing, result saved as {filename}')
     }
+    
