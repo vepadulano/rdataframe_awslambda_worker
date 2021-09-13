@@ -16,13 +16,6 @@ def lambda_handler(event, context):
 
     start = int(event['start'])
     end = int(event['end'])
-    filelist= literal_eval(event['filelist'])
-    friend_info= None
-    
-    if event.get('friend_info'):
-        friend_info = pickle.loads(
-            base64.b64decode(event['friend_info'][2:-1])
-        )
 
     range = base64.b64decode(event['range'][2:-1])
     mapper = base64.b64decode(event['script'][2:-1])
@@ -31,21 +24,8 @@ def lambda_handler(event, context):
     mapper=pickle.loads(mapper)
     range=pickle.loads(range)
 
-    text_file = open("/tmp/certs", "wb")
-    n = text_file.write(cert_file)
-    text_file.close()
-
-    # range.start=start
-    # range.end=end
-    # range.filelist=filelist
-    # print("before friend")
-    # if friend_info is not None:
-    #     print(friend_info)
-    #     print(friend_info.friend_names)
-    #     print(friend_info.friend_file_names)
-
-    # range.friend_info=friend_info
-    # print("after friend")
+    with open("/tmp/certs", "wb") as handle:
+        pickle.dump(cert_file, handle)
 
     try:
         hist=mapper(range)
@@ -56,12 +36,11 @@ def lambda_handler(event, context):
             'errorMessage': json.dumps(str(e)),
         }
 
-    print("after map")
-
     # f = ROOT.TFile('/tmp/out.root', 'RECREATE')
     # for h in hist:
     #     h.GetValue().Write()
     # f.Close()
+    
     with open('/tmp/out.pickle', 'wb') as handle:
         pickle.dump(hist, handle)
 
