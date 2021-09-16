@@ -33,7 +33,10 @@ def lambda_handler(event, context):
         with open('/tmp/' + header_name, 'w') as f:
             f.write(header_content)
         print(header_name)
-        ROOT.gInterpreter.Declare(f'#include "/tmp/{header_name}"')
+        try:
+            ROOT.gInterpreter.Declare(f'#include "/tmp/{header_name}"')
+        except Exception:
+            pass
 
     mapper=pickle.loads(mapper)
     range=pickle.loads(range)
