@@ -81,6 +81,6 @@ def lambda_handler(event, context):
 
     return {
         'statusCode': 200,
-        'body': json.dumps(f'Done analyzing, result saved as {filename}')
+        'filename': json.dumps(filename)
     }
     
