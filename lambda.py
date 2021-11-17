@@ -39,10 +39,11 @@ class MonitoringThread(multiprocessing.Process):
 
     def run(self):
         import os
+        import json
         f = open("/tmp/{results_fname}", "a")
         while not self.stopped():
             os.nice(0)
-            f.write(json_dumps(monitor_me()))
+            f.write(json.dumps(monitor_me()))
             time.sleep(1)
         f.close()
 
