@@ -41,7 +41,7 @@ class MonitoringThread(multiprocessing.Process):
         import os
         import json
         f = open("/tmp/{results_fname}", "a")
-        while not self.stopped():
+        while True:
             os.nice(0)
             f.write(json.dumps(monitor_me()))
             time.sleep(1)
@@ -87,8 +87,7 @@ def lambda_handler(event, context):
 
     if monitor:
         print('monitoring stopping!')
-        thread.stop()
-        thread.join()
+        thread.terminate()
         print('monitoring finished!')
 
     f = open(f'/tmp/{results_fname}', 'r')
