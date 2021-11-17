@@ -3,6 +3,7 @@ import base64
 import json
 import os
 import time
+import multiprocessing
 import cloudpickle as pickle
 from Inspector import Inspector
 from ast import literal_eval
