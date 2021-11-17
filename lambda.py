@@ -3,7 +3,7 @@ import base64
 import json
 import os
 import time
-import multiprocessing
+from multiprocessing import Process, Queue
 import cloudpickle as pickle
 from Inspector import Inspector
 from ast import literal_eval
@@ -16,45 +16,31 @@ monitor = (os.getenv('monitor', 'False') == 'True')
 results_fname = os.getenv('results_fname', 'results.txt')
 
 
-def monitor_me():
+def inspect_me():
     inspector = Inspector()
     inspector.inspectAll()
     return inspector.finish()
 
 
-class MonitoringThread(multiprocessing.Process):
-    """Thread class with a stop() method. The thread itself has to check
-    regularly for the stopped() condition."""
-
-    def __init__(self, *args, **kwargs):
-        super(MonitoringThread, self).__init__(*args, **kwargs)
-        self._stop_event = threading.Event()
-        self._results = []
-
-    def stop(self):
-        self._stop_event.set()
-
-    def stopped(self):
-        return self._stop_event.is_set()
-
-    def run(self):
-        import os
-        import json
-        results_fname = 'results.txt'
-        f = open("/tmp/{results_fname}", "a")
-        f.write("[")
-        f.close()
-        while True:
-            os.nice(0)
-            f = open("/tmp/{results_fname}", "a")
-            f.write(json.dumps(monitor_me()))
-            f.close()
-            time.sleep(1)
+def the_monitor(queue):
+    # results_fname = 'results.txt'
+    # f = open("/tmp/{results_fname}", "a+")
+    # f.write("[")
+    # f.close()
+    while True:
+        os.nice(0)
+        queue.put(inspect_me())
+        # f = open("/tmp/{results_fname}", "a+")
+        # f.write(json.dumps(inspect_me()))
+        # f.close()
+        time.sleep(1)
 
 
 def lambda_handler(event, context):
+    thread = None
+    q = Queue()
     if monitor:
-        thread = MonitoringThread()
+        thread = Process(target=the_monitor, args=(q,))
         thread.start()
         print('monitoring started!')
 
@@ -94,13 +80,17 @@ def lambda_handler(event, context):
         thread.terminate()
         thread.join()
         print('monitoring finished!')
+    
+    results=[]
+    while not q.empty():
+        results.append(q.get())
 
-    f = open("/tmp/{results_fname}", "a")
-    f.write("]")
-    f.close()
-    f = open(f'/tmp/{results_fname}', 'r')
-    results = f.read()
-    f.close()
+    # f = open("/tmp/{results_fname}", "a")
+    # f.write("]")
+    # f.close()
+    # f = open(f'/tmp/{results_fname}', 'r')
+    # results = f.read()
+    # f.close()
 
     return {
         'statusCode': 200,
