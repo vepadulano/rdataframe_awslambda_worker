@@ -4,6 +4,7 @@ import json
 import os
 import time
 import cloudpickle as pickle
+from .Inspector import Inspector
 from ast import literal_eval
 
 import boto3
