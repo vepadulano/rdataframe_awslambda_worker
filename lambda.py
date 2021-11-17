@@ -41,11 +41,14 @@ class MonitoringThread(multiprocessing.Process):
         import os
         import json
         f = open("/tmp/{results_fname}", "a")
+        f.write("[")
+        f.close()
         while True:
             os.nice(0)
+            f = open("/tmp/{results_fname}", "a")
             f.write(json.dumps(monitor_me()))
+            f.close()
             time.sleep(1)
-        f.close()
 
 
 def lambda_handler(event, context):
@@ -90,6 +93,9 @@ def lambda_handler(event, context):
         thread.terminate()
         print('monitoring finished!')
 
+    f = open("/tmp/{results_fname}", "a")
+    f.write("]")
+    f.close()
     f = open(f'/tmp/{results_fname}', 'r')
     results = f.read()
     f.close()
