@@ -3,7 +3,7 @@ import base64
 import json
 import os
 import time
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Pipe
 import cloudpickle as pickle
 from Inspector import Inspector
 from ast import literal_eval
@@ -16,20 +16,18 @@ monitor = (os.getenv('monitor', 'False') == 'True')
 results_fname = os.getenv('results_fname', 'results.txt')
 
 
-def inspect_me():
-    inspector = Inspector()
-    inspector.inspectAll()
-    return inspector.finish()
-
-
-def the_monitor(queue):
+def the_monitor(pipe):
+    def inspect_me():
+        inspector = Inspector()
+        inspector.inspectAll()
+        return inspector.finish()
     # results_fname = 'results.txt'
     # f = open("/tmp/{results_fname}", "a+")
     # f.write("[")
     # f.close()
     while True:
         os.nice(0)
-        queue.put(inspect_me())
+        pipe.send(inspect_me())
         # f = open("/tmp/{results_fname}", "a+")
         # f.write(json.dumps(inspect_me()))
         # f.close()
@@ -38,9 +36,9 @@ def the_monitor(queue):
 
 def lambda_handler(event, context):
     thread = None
-    q = Queue()
+    pipe_in, pipe_out = Pipe()
     if monitor:
-        thread = Process(target=the_monitor, args=(q,))
+        thread = Process(target=the_monitor, args=(pipe_in,))
         thread.start()
         print('monitoring started!')
 
@@ -82,8 +80,8 @@ def lambda_handler(event, context):
         print('monitoring finished!')
     
     results=[]
-    while not q.empty():
-        results.append(q.get())
+    while pipe_out.poll():
+        results.append(pipe_out.recv())
 
     # f = open("/tmp/{results_fname}", "a")
     # f.write("]")
