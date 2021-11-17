@@ -12,18 +12,16 @@ import ROOT
 
 bucket = os.getenv('bucket')
 monitor = (os.getenv('monitor', 'False') == 'True')
-
-results = []
+results_fname = os.getenv('results_fname', 'results.txt')
 
 
 def monitor_me():
     inspector = Inspector()
     inspector.inspectAll()
-    inspector.inspectAllDeltas()
     return inspector.finish()
 
 
-class MonitoringThread(threading.Thread):
+class MonitoringThread(multiprocessing.Process):
     """Thread class with a stop() method. The thread itself has to check
     regularly for the stopped() condition."""
 
@@ -39,15 +37,20 @@ class MonitoringThread(threading.Thread):
         return self._stop_event.is_set()
 
     def run(self):
+        import os
+        f = open("/tmp/{results_fname}", "a")
         while not self.stopped():
-            results.append(monitor_me())
+            os.nice(0)
+            f.write(json_dumps(monitor_me()))
             time.sleep(1)
+        f.close()
 
 
 def lambda_handler(event, context):
     if monitor:
         thread = MonitoringThread()
         thread.start()
+        print('monitoring started!')
 
     print('event', event)
     s3 = boto3.client('s3')
@@ -81,8 +84,14 @@ def lambda_handler(event, context):
     s3.upload_file(f'/tmp/out.pickle', bucket, filename)
 
     if monitor:
+        print('monitoring stopping!')
         thread.stop()
         thread.join()
+        print('monitoring finished!')
+
+    f = open(f'/tmp/{results_fname}', 'r')
+    results = f.read()
+    f.close()
 
     return {
         'statusCode': 200,
