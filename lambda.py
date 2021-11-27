@@ -24,7 +24,7 @@ def the_monitor(pipe):
         my_dict = {}
         for line in memInfo.split('\n')[2:-1]:
             splitted = line.split(':')
-            my_dict[splitted[0].strip()] = splitted[1].lstrip().split(maxsplit=1)[0]
+            my_dict[splitted[0].strip()] = int(splitted[1].lstrip().split(maxsplit=1)[0])
         return my_dict
 
     def inspect_me():
