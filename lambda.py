@@ -17,20 +17,26 @@ results_fname = os.getenv('results_fname', 'results.txt')
 
 
 def the_monitor(pipe):
+    def network_measurement():
+        memInfo = ""
+        with open('/proc/net/dev', 'r') as file:
+            memInfo = file.read()
+        my_dict = {}
+        for line in memInfo.split('\n')[2:-1]:
+            splitted = line.split(':')
+            my_dict[splitted[0].strip()] = splitted[1].lstrip().split(maxsplit=1)[0]
+        return my_dict
+
     def inspect_me():
         inspector = Inspector()
         inspector.inspectAll()
+        inspector.addAttribute("network_rx_bytes", network_measurement())
+
         return inspector.finish()
-    # results_fname = 'results.txt'
-    # f = open("/tmp/{results_fname}", "a+")
-    # f.write("[")
-    # f.close()
+
     while True:
         os.nice(0)
         pipe.send(inspect_me())
-        # f = open("/tmp/{results_fname}", "a+")
-        # f.write(json.dumps(inspect_me()))
-        # f.close()
         time.sleep(1)
 
 
@@ -78,17 +84,10 @@ def lambda_handler(event, context):
         thread.terminate()
         thread.join()
         print('monitoring finished!')
-    
-    results=[]
+
+    results = []
     while pipe_out.poll():
         results.append(pipe_out.recv())
-
-    # f = open("/tmp/{results_fname}", "a")
-    # f.write("]")
-    # f.close()
-    # f = open(f'/tmp/{results_fname}', 'r')
-    # results = f.read()
-    # f.close()
 
     return {
         'statusCode': 200,
